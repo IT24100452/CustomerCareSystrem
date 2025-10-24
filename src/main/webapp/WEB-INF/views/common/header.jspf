@@ -1,0 +1,161 @@
+<%@ page contentType="text/html;charset=UTF-8" language="java" %>
+<%@ taglib prefix="c" uri="jakarta.tags.core" %>
+<%@ taglib prefix="fmt" uri="jakarta.tags.fmt" %>
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><c:out value="${pageTitle != null ? pageTitle : 'Smart Lanka Customer Care System'}" /></title>
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/app.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1><i class="fas fa-headset"></i> Smart Lanka Customer Care System</h1>
+            <p>Comprehensive Customer Support Management Platform</p>
+        </div>
+        
+        <c:if test="${sessionScope.userId != null}">
+            <div class="dashboard-container">
+                <div class="sidebar">
+                    <div class="user-info">
+                        <div class="user-avatar">
+                            <c:choose>
+                                <c:when test="${sessionScope.userRole == 1 || sessionScope.userRole == 2}">
+                                    <i class="fas fa-crown"></i>
+                                </c:when>
+                                <c:when test="${sessionScope.userRole == 3}">
+                                    <i class="fas fa-user-tie"></i>
+                                </c:when>
+                                <c:when test="${sessionScope.userRole == 4}">
+                                    <i class="fas fa-calculator"></i>
+                                </c:when>
+                                <c:when test="${sessionScope.userRole == 5}">
+                                    <i class="fas fa-chart-line"></i>
+                                </c:when>
+                                <c:when test="${sessionScope.userRole == 6}">
+                                    <i class="fas fa-bullhorn"></i>
+                                </c:when>
+                                <c:when test="${sessionScope.userRole == 7}">
+                                    <i class="fas fa-user"></i>
+                                </c:when>
+                                <c:otherwise>
+                                    <i class="fas fa-user"></i>
+                                </c:otherwise>
+                            </c:choose>
+                        </div>
+                        <div class="user-name">${sessionScope.userName != null ? sessionScope.userName : 'User'}</div>
+                        <div class="user-role">
+                            <c:choose>
+                                <c:when test="${sessionScope.userRole == 1}">System Administrator</c:when>
+                                <c:when test="${sessionScope.userRole == 2}">Administrator</c:when>
+                                <c:when test="${sessionScope.userRole == 3}">Support Staff</c:when>
+                                <c:when test="${sessionScope.userRole == 4}">Finance Staff</c:when>
+                                <c:when test="${sessionScope.userRole == 5}">Manager</c:when>
+                                <c:when test="${sessionScope.userRole == 6}">Marketing Executive</c:when>
+                                <c:when test="${sessionScope.userRole == 7}">Customer</c:when>
+                                <c:otherwise>Unknown Role</c:otherwise>
+                            </c:choose>
+                        </div>
+                    </div>
+                    
+                    <ul class="nav-menu">
+                        <!-- Dashboard -->
+                        <li><a href="${pageContext.request.contextPath}/dashboard" class="nav-link">
+                            <i class="fas fa-tachometer-alt"></i> Dashboard
+                        </a></li>
+                        
+                        <!-- Customer Menu -->
+                        <c:if test="${sessionScope.userRole == 7}">
+                            <li><a href="${pageContext.request.contextPath}/complaint?action=list" class="nav-link">
+                                <i class="fas fa-list"></i> My Complaints
+                            </a></li>
+                            <li><a href="${pageContext.request.contextPath}/complaint?action=create" class="nav-link">
+                                <i class="fas fa-plus"></i> Submit Complaint
+                            </a></li>
+                            <li><a href="${pageContext.request.contextPath}/feedback?action=list" class="nav-link">
+                                <i class="fas fa-comments"></i> My Feedback
+                            </a></li>
+                            <li><a href="${pageContext.request.contextPath}/feedback?action=create" class="nav-link">
+                                <i class="fas fa-star"></i> Give Feedback
+                            </a></li>
+                        </c:if>
+                        
+                        <!-- Support Staff Menu -->
+                        <c:if test="${sessionScope.userRole == 3}">
+                            <li><a href="${pageContext.request.contextPath}/complaint?action=list" class="nav-link">
+                                <i class="fas fa-list"></i> All Complaints
+                            </a></li>
+                            <li><a href="${pageContext.request.contextPath}/assignment?action=list" class="nav-link">
+                                <i class="fas fa-tasks"></i> My Assignments
+                            </a></li>
+                            <li><a href="${pageContext.request.contextPath}/assignment?action=create" class="nav-link">
+                                <i class="fas fa-user-plus"></i> Assign Complaint
+                            </a></li>
+                        </c:if>
+                        
+                        <!-- Manager Menu -->
+                        <c:if test="${sessionScope.userRole == 5}">
+                            <li><a href="${pageContext.request.contextPath}/report?action=performance" class="nav-link">
+                                <i class="fas fa-chart-bar"></i> Performance Reports
+                            </a></li>
+                            <li><a href="${pageContext.request.contextPath}/report?action=create" class="nav-link">
+                                <i class="fas fa-plus"></i> Create Report
+                            </a></li>
+                            <li><a href="${pageContext.request.contextPath}/assignment?action=list" class="nav-link">
+                                <i class="fas fa-tasks"></i> All Assignments
+                            </a></li>
+                        </c:if>
+                        
+                        <!-- Marketing Menu -->
+                        <c:if test="${sessionScope.userRole == 6}">
+                            <li><a href="${pageContext.request.contextPath}/feedback?action=metrics" class="nav-link">
+                                <i class="fas fa-chart-pie"></i> Feedback Metrics
+                            </a></li>
+                            <li><a href="${pageContext.request.contextPath}/report?action=marketing" class="nav-link">
+                                <i class="fas fa-bullhorn"></i> Marketing Reports
+                            </a></li>
+                            <li><a href="${pageContext.request.contextPath}/report?action=create&type=marketing" class="nav-link">
+                                <i class="fas fa-plus"></i> Create Marketing Report
+                            </a></li>
+                        </c:if>
+                        
+                        <!-- Admin Menu -->
+                        <c:if test="${sessionScope.userRole == 1 || sessionScope.userRole == 2}">
+                            <li><a href="${pageContext.request.contextPath}/user?action=list" class="nav-link">
+                                <i class="fas fa-users"></i> Manage Users
+                            </a></li>
+                            <li><a href="${pageContext.request.contextPath}/user?action=create" class="nav-link">
+                                <i class="fas fa-user-plus"></i> Create User
+                            </a></li>
+                            <li><a href="${pageContext.request.contextPath}/admin/logs" class="nav-link">
+                                <i class="fas fa-file-alt"></i> System Logs
+                            </a></li>
+                            <li><a href="${pageContext.request.contextPath}/admin/settings" class="nav-link">
+                                <i class="fas fa-cog"></i> Settings
+                            </a></li>
+                        </c:if>
+                        
+                        <!-- Common Menu Items -->
+                        <li><a href="${pageContext.request.contextPath}/notifications" class="nav-link">
+                            <i class="fas fa-bell"></i> Notifications
+                            <c:if test="${sessionScope.unreadCount > 0}">
+                                <span class="notification-badge">${sessionScope.unreadCount}</span>
+                            </c:if>
+                        </a></li>
+                        
+                        <li><a href="${pageContext.request.contextPath}/profile" class="nav-link">
+                            <i class="fas fa-user-edit"></i> Profile
+                        </a></li>
+                        
+                        <li><a href="${pageContext.request.contextPath}/auth/logout" class="nav-link">
+                            <i class="fas fa-sign-out-alt"></i> Logout
+                        </a></li>
+                    </ul>
+                </div>
+                
+                <div class="main-content">
+                    <!-- Content of the page will be injected here -->

@@ -1,0 +1,420 @@
+<%@ page contentType="text/html;charset=UTF-8" language="java" %>
+<%@ page import="java.util.List" %>
+<%@ page import="lk.smartlanka.ccs.model.Notification" %>
+<%@ page import="java.text.SimpleDateFormat" %>
+
+<%
+    List<Notification> notifications = (List<Notification>) request.getAttribute("notifications");
+    Integer unreadCount = (Integer) session.getAttribute("unreadCount");
+    
+    if (notifications == null) {
+        notifications = new java.util.ArrayList<>();
+    }
+    if (unreadCount == null) {
+        unreadCount = 0;
+    }
+%>
+
+<!-- Notification Bell Icon -->
+<div class="notification-container">
+    <div class="notification-bell" onclick="toggleNotifications()">
+        <i class="fas fa-bell"></i>
+        <% if (unreadCount > 0) { %>
+            <span class="notification-badge"><%= unreadCount %></span>
+        <% } %>
+    </div>
+    
+    <!-- Notification Dropdown -->
+    <div class="notification-dropdown" id="notificationDropdown">
+        <div class="notification-header">
+            <h4><i class="fas fa-bell"></i> Notifications</h4>
+            <% if (unreadCount > 0) { %>
+                <button onclick="markAllAsRead()" class="btn-mark-all">Mark All Read</button>
+            <% } %>
+        </div>
+        
+        <div class="notification-list">
+            <% if (notifications.isEmpty()) { %>
+                <div class="notification-item no-notifications">
+                    <i class="fas fa-info-circle"></i>
+                    <span>No notifications</span>
+                </div>
+            <% } else { %>
+                <% for (Notification notification : notifications) { %>
+                    <div class="notification-item <%= notification.isRead() ? "read" : "unread" %>" 
+                         onclick="markAsRead(<%= notification.getNotificationId() %>)">
+                        <div class="notification-icon">
+                            <% 
+                                String iconClass = "fas fa-info-circle";
+                                String iconColor = "#3498db";
+                                switch (notification.getType()) {
+                                    case "SUCCESS":
+                                        iconClass = "fas fa-check-circle";
+                                        iconColor = "#27ae60";
+                                        break;
+                                    case "WARNING":
+                                        iconClass = "fas fa-exclamation-triangle";
+                                        iconColor = "#f39c12";
+                                        break;
+                                    case "ERROR":
+                                        iconClass = "fas fa-times-circle";
+                                        iconColor = "#e74c3c";
+                                        break;
+                                    case "INFO":
+                                    default:
+                                        iconClass = "fas fa-info-circle";
+                                        iconColor = "#3498db";
+                                        break;
+                                }
+                            %>
+                            <i class="<%= iconClass %>" style="color: <%= iconColor %>"></i>
+                        </div>
+                        <div class="notification-content">
+                            <div class="notification-title"><%= notification.getTitle() %></div>
+                            <div class="notification-message"><%= notification.getMessage() %></div>
+                            <div class="notification-time">
+                                <%= new SimpleDateFormat("MMM dd, HH:mm").format(notification.getCreatedAt()) %>
+                            </div>
+                        </div>
+                        <% if (!notification.isRead()) { %>
+                            <div class="notification-unread-indicator"></div>
+                        <% } %>
+                    </div>
+                <% } %>
+            <% } %>
+        </div>
+        
+        <div class="notification-footer">
+            <a href="${pageContext.request.contextPath}/notifications" class="view-all-link">
+                <i class="fas fa-list"></i> View All Notifications
+            </a>
+        </div>
+    </div>
+</div>
+
+<style>
+.notification-container {
+    position: relative;
+    display: inline-block;
+}
+
+.notification-bell {
+    position: relative;
+    cursor: pointer;
+    padding: 10px;
+    border-radius: 50%;
+    background: #f8f9fa;
+    transition: all 0.3s ease;
+    color: #6c757d;
+}
+
+.notification-bell:hover {
+    background: #e9ecef;
+    color: #495057;
+}
+
+.notification-badge {
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    background: #e74c3c;
+    color: white;
+    border-radius: 50%;
+    width: 18px;
+    height: 18px;
+    font-size: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+}
+
+.notification-dropdown {
+    position: absolute;
+    top: 100%;
+    right: 0;
+    width: 350px;
+    background: white;
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+    z-index: 1000;
+    display: none;
+    max-height: 400px;
+    overflow: hidden;
+}
+
+.notification-dropdown.show {
+    display: block;
+}
+
+.notification-header {
+    padding: 15px;
+    border-bottom: 1px solid #dee2e6;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: #f8f9fa;
+}
+
+.notification-header h4 {
+    margin: 0;
+    font-size: 16px;
+    color: #495057;
+}
+
+.btn-mark-all {
+    background: #007bff;
+    color: white;
+    border: none;
+    padding: 5px 10px;
+    border-radius: 4px;
+    font-size: 12px;
+    cursor: pointer;
+    transition: background 0.3s ease;
+}
+
+.btn-mark-all:hover {
+    background: #0056b3;
+}
+
+.notification-list {
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+.notification-item {
+    padding: 12px 15px;
+    border-bottom: 1px solid #f1f3f4;
+    cursor: pointer;
+    transition: background 0.3s ease;
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    position: relative;
+}
+
+.notification-item:hover {
+    background: #f8f9fa;
+}
+
+.notification-item.unread {
+    background: #e3f2fd;
+    border-left: 3px solid #2196f3;
+}
+
+.notification-item.read {
+    opacity: 0.8;
+}
+
+.notification-item.no-notifications {
+    text-align: center;
+    color: #6c757d;
+    cursor: default;
+    justify-content: center;
+}
+
+.notification-icon {
+    flex-shrink: 0;
+    margin-top: 2px;
+}
+
+.notification-content {
+    flex: 1;
+    min-width: 0;
+}
+
+.notification-title {
+    font-weight: 600;
+    color: #212529;
+    margin-bottom: 4px;
+    font-size: 14px;
+}
+
+.notification-message {
+    color: #6c757d;
+    font-size: 13px;
+    line-height: 1.4;
+    margin-bottom: 4px;
+    word-wrap: break-word;
+}
+
+.notification-time {
+    color: #adb5bd;
+    font-size: 11px;
+}
+
+.notification-unread-indicator {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    width: 8px;
+    height: 8px;
+    background: #007bff;
+    border-radius: 50%;
+}
+
+.notification-footer {
+    padding: 10px 15px;
+    border-top: 1px solid #dee2e6;
+    background: #f8f9fa;
+    text-align: center;
+}
+
+.view-all-link {
+    color: #007bff;
+    text-decoration: none;
+    font-size: 13px;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    transition: color 0.3s ease;
+}
+
+.view-all-link:hover {
+    color: #0056b3;
+    text-decoration: none;
+}
+
+/* Mobile responsiveness */
+@media (max-width: 768px) {
+    .notification-dropdown {
+        width: 300px;
+        right: -50px;
+    }
+}
+</style>
+
+<script>
+function toggleNotifications() {
+    const dropdown = document.getElementById('notificationDropdown');
+    dropdown.classList.toggle('show');
+}
+
+function markAsRead(notificationId) {
+    fetch('${pageContext.request.contextPath}/notifications', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: 'action=markRead&id=' + notificationId
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Update the notification item
+            const notificationItem = event.currentTarget;
+            notificationItem.classList.remove('unread');
+            notificationItem.classList.add('read');
+            
+            // Remove unread indicator
+            const indicator = notificationItem.querySelector('.notification-unread-indicator');
+            if (indicator) {
+                indicator.remove();
+            }
+            
+            // Update badge count
+            updateBadgeCount();
+        }
+    })
+    .catch(error => {
+        console.error('Error marking notification as read:', error);
+    });
+}
+
+function markAllAsRead() {
+    fetch('${pageContext.request.contextPath}/notifications', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: 'action=markAllRead'
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Update all notification items
+            const notificationItems = document.querySelectorAll('.notification-item.unread');
+            notificationItems.forEach(item => {
+                item.classList.remove('unread');
+                item.classList.add('read');
+                
+                const indicator = item.querySelector('.notification-unread-indicator');
+                if (indicator) {
+                    indicator.remove();
+                }
+            });
+            
+            // Hide mark all button
+            const markAllBtn = document.querySelector('.btn-mark-all');
+            if (markAllBtn) {
+                markAllBtn.style.display = 'none';
+            }
+            
+            // Update badge count
+            updateBadgeCount();
+        }
+    })
+    .catch(error => {
+        console.error('Error marking all notifications as read:', error);
+    });
+}
+
+function updateBadgeCount() {
+    const unreadItems = document.querySelectorAll('.notification-item.unread');
+    const badge = document.querySelector('.notification-badge');
+    
+    if (unreadItems.length === 0) {
+        if (badge) {
+            badge.remove();
+        }
+    } else {
+        if (!badge) {
+            const bell = document.querySelector('.notification-bell');
+            const newBadge = document.createElement('span');
+            newBadge.className = 'notification-badge';
+            bell.appendChild(newBadge);
+        }
+        const badgeElement = document.querySelector('.notification-badge');
+        if (badgeElement) {
+            badgeElement.textContent = unreadItems.length;
+        }
+    }
+}
+
+// Close dropdown when clicking outside
+document.addEventListener('click', function(event) {
+    const container = document.querySelector('.notification-container');
+    const dropdown = document.getElementById('notificationDropdown');
+    
+    if (!container.contains(event.target) && dropdown.classList.contains('show')) {
+        dropdown.classList.remove('show');
+    }
+});
+
+// Auto-refresh notifications every 30 seconds
+setInterval(function() {
+    fetch('${pageContext.request.contextPath}/notifications?action=count')
+    .then(response => response.json())
+    .then(data => {
+        const badge = document.querySelector('.notification-badge');
+        if (data.count > 0) {
+            if (!badge) {
+                const bell = document.querySelector('.notification-bell');
+                const newBadge = document.createElement('span');
+                newBadge.className = 'notification-badge';
+                newBadge.textContent = data.count;
+                bell.appendChild(newBadge);
+            } else {
+                badge.textContent = data.count;
+            }
+        } else if (badge) {
+            badge.remove();
+        }
+    })
+    .catch(error => {
+        console.error('Error updating notification count:', error);
+    });
+}, 30000);
+</script>
+
